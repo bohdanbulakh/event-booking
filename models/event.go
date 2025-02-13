@@ -1,11 +1,12 @@
 package models
 
 import (
+	"event-booking/database"
 	"time"
 )
 
 type Event struct {
-	Id          int
+	Id          int64
 	Name        string    `binding:"required" json:"name"`
 	Description string    `json:"description"`
 	Location    string    `binding:"required" json:"location"`
@@ -13,12 +14,66 @@ type Event struct {
 	UserId      int       `binding:"required" json:"user_id"`
 }
 
-var events []Event
+func (e Event) Save() error {
+	query := `
+	INSERT INTO events (name, description, location, datetime, user_id)
+	VALUES (?, ?, ?, ?, ?)`
 
-func (e Event) Save() {
-	events = append(events, e)
+	statement, exception := database.DB.Prepare(query)
+	if exception != nil {
+		return exception
+	}
+	defer statement.Close()
+
+	result, exception := statement.Exec(
+		e.Name,
+		e.Description,
+		e.Location,
+		e.DateTime,
+		e.UserId)
+
+	if exception != nil {
+		return exception
+	}
+
+	id, exception := result.LastInsertId()
+	if exception != nil {
+		return exception
+	}
+
+	e.Id = id
+	return nil
 }
 
-func GetAllEvents() []Event {
-	return events
+func GetAllEvents() ([]Event, error) {
+	query := `
+	SELECT * FROM events`
+
+	rows, exception := database.DB.Query(query)
+	if exception != nil {
+		return nil, exception
+	}
+	defer rows.Close()
+
+	var events []Event
+
+	for rows.Next() {
+		var event Event
+		exception = rows.Scan(
+			&event.Id,
+			&event.Name,
+			&event.Description,
+			&event.Location,
+			&event.DateTime,
+			&event.UserId,
+		)
+
+		if exception != nil {
+			return nil, exception
+		}
+
+		events = append(events, event)
+	}
+
+	return events, nil
 }

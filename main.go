@@ -3,6 +3,7 @@ package main
 import (
 	"event-booking/database"
 	"event-booking/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -23,7 +24,15 @@ func main() {
 }
 
 func getEvents(context *gin.Context) {
-	events := models.GetAllEvents()
+	events, exception := models.GetAllEvents()
+	if exception != nil {
+		context.JSON(
+			http.StatusInternalServerError,
+			gin.H{"message": "InternalServerError"},
+		)
+		fmt.Println(exception)
+	}
+
 	context.JSON(http.StatusOK, gin.H{"events": events})
 }
 
@@ -35,8 +44,15 @@ func createEvent(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "InvalidBodyException"})
 	}
 
-	event.Id = 1
-	event.Save()
+	exception = event.Save()
+	if exception != nil {
+		context.JSON(
+			http.StatusInternalServerError,
+			gin.H{"message": "InternalServerError"},
+		)
+		fmt.Println(exception)
+	}
+
 	context.JSON(http.StatusCreated, nil)
 }
 
