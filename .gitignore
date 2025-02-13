@@ -1,0 +1,15 @@
+### dotenv template
+.env*
+
+### Executable template
+*.app
+*.bat
+*.cgi
+*.com
+*.exe
+*.gadget
+*.jar
+*.pif
+*.vb
+*.wsf
+
