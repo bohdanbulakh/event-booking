@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -18,6 +19,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	server.GET("/events", getEvents)
+	server.GET("/event/:id", getEvent)
 	server.POST("/events", createEvent)
 
 	server.Run(":" + port)
@@ -31,9 +33,34 @@ func getEvents(context *gin.Context) {
 			gin.H{"message": "InternalServerError"},
 		)
 		fmt.Println(exception)
+		return
 	}
 
 	context.JSON(http.StatusOK, gin.H{"events": events})
+}
+
+func getEvent(context *gin.Context) {
+	id, exception := strconv.ParseInt(context.Param("id"), 10, 64)
+	if exception != nil {
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{"message": "Cannot parse event id"},
+		)
+		fmt.Println(exception)
+		return
+	}
+
+	event, exception := models.GetEventById(id)
+	if exception != nil {
+		context.JSON(
+			http.StatusNotFound,
+			gin.H{"message": "NotFoundException"},
+		)
+		fmt.Println(exception)
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"event": event})
 }
 
 func createEvent(context *gin.Context) {
@@ -41,7 +68,12 @@ func createEvent(context *gin.Context) {
 	exception := context.ShouldBindJSON(&event)
 
 	if exception != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "InvalidBodyException"})
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{"message": "InvalidBodyException"},
+		)
+		fmt.Println(exception)
+		return
 	}
 
 	exception = event.Save()
@@ -51,6 +83,7 @@ func createEvent(context *gin.Context) {
 			gin.H{"message": "InternalServerError"},
 		)
 		fmt.Println(exception)
+		return
 	}
 
 	context.JSON(http.StatusCreated, nil)
