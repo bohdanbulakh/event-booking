@@ -13,11 +13,12 @@ func InitDB() {
 	DB, err = sql.Open("sqlite3", "api.db")
 
 	if err != nil {
-		panic("Could not connect to database.")
+		log.Fatal("Could not connect to database.")
 	}
 
 	DB.SetMaxOpenConns(20)
 	DB.SetMaxIdleConns(5)
+	createTables()
 }
 
 func createTables() {
