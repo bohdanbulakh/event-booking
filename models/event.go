@@ -14,7 +14,7 @@ type Event struct {
 	UserId      int       `binding:"required" json:"user_id"`
 }
 
-func (e Event) Save() error {
+func (event Event) Save() error {
 	query := `
 	INSERT INTO events (name, description, location, datetime, user_id)
 	VALUES (?, ?, ?, ?, ?)`
@@ -26,11 +26,11 @@ func (e Event) Save() error {
 	defer statement.Close()
 
 	result, exception := statement.Exec(
-		e.Name,
-		e.Description,
-		e.Location,
-		e.DateTime,
-		e.UserId)
+		event.Name,
+		event.Description,
+		event.Location,
+		event.DateTime,
+		event.UserId)
 
 	if exception != nil {
 		return exception
@@ -41,7 +41,7 @@ func (e Event) Save() error {
 		return exception
 	}
 
-	e.Id = id
+	event.Id = id
 	return nil
 }
 
@@ -99,4 +99,28 @@ func GetEventById(id int64) (*Event, error) {
 	}
 
 	return &event, exception
+}
+
+func (event Event) Update() error {
+	query := `
+UPDATE events
+SET name = ?, description = ?, location = ?, datetime = ?, user_id = ?
+WHERE id = ?`
+
+	statement, exception := database.DB.Prepare(query)
+	if exception != nil {
+		return exception
+	}
+	defer statement.Close()
+
+	_, exception = statement.Exec(
+		event.Name,
+		event.Description,
+		event.Location,
+		event.DateTime,
+		event.UserId,
+		event.Id,
+	)
+
+	return exception
 }
