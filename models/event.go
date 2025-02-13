@@ -7,7 +7,7 @@ import (
 type Event struct {
 	Id          int
 	Name        string    `binding:"required" json:"name"`
-	Description string    `binding:"required" json:"description"`
+	Description string    `json:"description"`
 	Location    string    `binding:"required" json:"location"`
 	DateTime    time.Time `binding:"required" json:"datetime"`
 	UserId      int       `binding:"required" json:"user_id"`

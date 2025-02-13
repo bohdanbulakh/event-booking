@@ -1,6 +1,7 @@
 package main
 
 import (
+	"event-booking/database"
 	"event-booking/models"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+	database.InitDB()
 	server := gin.Default()
 	loadEnv()
 	port := os.Getenv("PORT")
