@@ -1,6 +1,7 @@
 package main
 
 import (
+	"event-booking/models"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -14,12 +15,27 @@ func main() {
 	port := os.Getenv("PORT")
 
 	server.GET("/events", getEvents)
+	server.POST("/events", createEvent)
 
 	server.Run(":" + port)
 }
 
 func getEvents(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"event": "some useful data"})
+	events := models.GetAllEvents()
+	context.JSON(http.StatusOK, gin.H{"events": events})
+}
+
+func createEvent(context *gin.Context) {
+	var event models.Event
+	exception := context.ShouldBindJSON(&event)
+
+	if exception != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "InvalidBodyException"})
+	}
+
+	event.Id = 1
+	event.Save()
+	context.JSON(http.StatusCreated, nil)
 }
 
 func loadEnv() {
