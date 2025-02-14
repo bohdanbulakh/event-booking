@@ -124,3 +124,17 @@ WHERE id = ?`
 
 	return exception
 }
+
+func (event Event) Delete() error {
+	query := "DELETE FROM events where id = ?"
+	statement, exception := database.DB.Prepare(query)
+
+	if exception != nil {
+		return exception
+	}
+
+	defer statement.Close()
+
+	_, exception = statement.Exec(event.Id)
+	return exception
+}
