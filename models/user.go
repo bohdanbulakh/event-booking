@@ -1,6 +1,9 @@
 package models
 
-import "event-booking/database"
+import (
+	"event-booking/database"
+	"event-booking/utils"
+)
 
 type User struct {
 	Id       int64
@@ -18,9 +21,14 @@ func (user User) Save() error {
 		return exception
 	}
 
+	hashedPassword, exception := utils.HashPassword(user.Password)
+	if exception != nil {
+		return exception
+	}
+
 	result, exception := statement.Exec(
 		user.Email,
-		user.Password,
+		hashedPassword,
 	)
 	if exception != nil {
 		return exception
