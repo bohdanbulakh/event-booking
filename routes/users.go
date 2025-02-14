@@ -2,6 +2,7 @@ package routes
 
 import (
 	"event-booking/models"
+	"event-booking/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -54,12 +55,24 @@ func login(context *gin.Context) {
 			http.StatusUnauthorized,
 			gin.H{"message": "UnauthorizedException"},
 		)
+		return
+	}
+
+	token, exception := utils.GenerateToken(
+		user.Id,
+		user.Email,
+	)
+	if exception != nil {
+		context.JSON(
+			http.StatusInternalServerError,
+			gin.H{"message": exception.Error()},
+		)
 		fmt.Println(exception)
 		return
 	}
 
 	context.JSON(
 		http.StatusOK,
-		gin.H{"message": "Success"},
+		gin.H{"accessToken": token},
 	)
 }

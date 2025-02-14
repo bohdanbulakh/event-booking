@@ -41,11 +41,14 @@ func (user User) Save() error {
 }
 
 func (user User) ValidateCredentials() error {
-	query := "SELECT password FROM users WHERE email = ?"
+	query := "SELECT id, password FROM users WHERE email = ?"
 	row := database.DB.QueryRow(query, user.Email)
 
 	var hashedPassword string
-	exception := row.Scan(&hashedPassword)
+	exception := row.Scan(
+		&user.Id,
+		&hashedPassword,
+	)
 	if exception != nil {
 		return exception
 	}
