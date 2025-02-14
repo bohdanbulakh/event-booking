@@ -35,3 +35,31 @@ func signup(context *gin.Context) {
 		gin.H{"user": user},
 	)
 }
+
+func login(context *gin.Context) {
+	var user models.User
+
+	exception := context.ShouldBindJSON(&user)
+	if exception != nil {
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{"message": "InvalidBodyException"},
+		)
+		return
+	}
+
+	exception = user.ValidateCredentials()
+	if exception != nil {
+		context.JSON(
+			http.StatusUnauthorized,
+			gin.H{"message": "UnauthorizedException"},
+		)
+		fmt.Println(exception)
+		return
+	}
+
+	context.JSON(
+		http.StatusOK,
+		gin.H{"message": "Success"},
+	)
+}
