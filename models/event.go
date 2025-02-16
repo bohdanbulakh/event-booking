@@ -141,8 +141,22 @@ func (event *Event) Delete() error {
 
 func (event *Event) Register(userId int64) error {
 	query := `
-  INSERT INTO registrations(userId, eventId)
+  INSERT INTO registrations(user_id, event_id)
   VALUES (?, ?)`
+
+	statement, exception := database.DB.Prepare(query)
+	if exception != nil {
+		return exception
+	}
+	defer statement.Close()
+
+	_, exception = statement.Exec(userId, event.Id)
+
+	return exception
+}
+
+func (event *Event) CancelRegistration(userId int64) error {
+	query := "DELETE FROM registrations WHERE event_id = ? AND user_id = ?"
 
 	statement, exception := database.DB.Prepare(query)
 	if exception != nil {
