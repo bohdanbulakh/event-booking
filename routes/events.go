@@ -79,6 +79,7 @@ func createEvent(context *gin.Context) {
 		return
 	}
 
+	event.UserId = userId
 	exception = event.Save()
 	if exception != nil {
 		context.JSON(

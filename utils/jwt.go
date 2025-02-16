@@ -55,10 +55,10 @@ func VerifyToken(tokenString string) (int64, error) {
 		return 0, errors.New("invalid token claims")
 	}
 
-	id, ok := claims["id"].(int64)
+	id, ok := claims["id"].(float64)
 	if !ok {
 		return 0, errors.New("invalid user id")
 	}
 
-	return id, nil
+	return int64(id), nil
 }
