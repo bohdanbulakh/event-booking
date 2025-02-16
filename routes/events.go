@@ -96,13 +96,22 @@ func updateEvent(context *gin.Context) {
 		return
 	}
 
-	_, exception = models.GetEventById(id)
+	event, exception := models.GetEventById(id)
 	if exception != nil {
 		context.JSON(
 			http.StatusNotFound,
 			gin.H{"message": "NotFoundException"},
 		)
 		fmt.Println(exception)
+		return
+	}
+
+	userId := context.GetInt64("userId")
+	if event.UserId != userId {
+		context.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			gin.H{"message": "UnauthorizedException"},
+		)
 		return
 	}
 
@@ -153,6 +162,15 @@ func deleteEvent(context *gin.Context) {
 			gin.H{"message": "NotFoundException"},
 		)
 		fmt.Println(exception)
+		return
+	}
+
+	userId := context.GetInt64("userId")
+	if event.UserId != userId {
+		context.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			gin.H{"message": "UnauthorizedException"},
+		)
 		return
 	}
 
