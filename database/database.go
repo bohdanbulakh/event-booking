@@ -22,19 +22,13 @@ func InitDB() {
 }
 
 func createTables() {
-	createUsersTableQuery := `
-  CREATE TABLE IF NOT EXISTS users (
+	tables := []string{
+		`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email VARCHAR(50) UNIQUE NOT NULL,
       password VARCHAR(50) NOT NULL
-  )`
-	_, exception := DB.Exec(createUsersTableQuery)
-	if exception != nil {
-		log.Fatal("Cannot create users table")
-	}
-
-	createEventsTableSQL := `
-	CREATE TABLE IF NOT EXISTS events (
+  )`,
+		`CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(50) NOT NULL,
     description VARCHAR(255),
@@ -42,9 +36,24 @@ func createTables() {
 	  datetime DATETIME NOT NULL,
 		user_id INTEGER NOT NULL,
 		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-	)`
-	_, exception = DB.Exec(createEventsTableSQL)
+	)`,
+		`CREATE TABLE IF NOT EXISTS registrations (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		event_id INTEGER NOT NULL,
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE
+	)`,
+	}
+
+	for _, table := range tables {
+		createTable(table)
+	}
+}
+
+func createTable(script string) {
+	_, exception := DB.Exec(script)
 	if exception != nil {
-		log.Fatal("Cannot create events table")
+		log.Fatal("Cannot create registrations table")
 	}
 }
