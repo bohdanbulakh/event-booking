@@ -2,7 +2,6 @@ package routes
 
 import (
 	"event-booking/models"
-	"event-booking/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -48,27 +47,8 @@ func getEvent(context *gin.Context) {
 }
 
 func createEvent(context *gin.Context) {
-	token := context.Request.Header.Get("Authorization")
-
-	if token == "" {
-		context.JSON(
-			http.StatusUnauthorized,
-			gin.H{"message": "UnauthorizedException"},
-		)
-		return
-	}
-
-	userId, exception := utils.VerifyToken(token)
-	if exception != nil {
-		context.JSON(
-			http.StatusUnauthorized,
-			gin.H{"message": "UnauthorizedException"},
-		)
-		return
-	}
-
 	var event models.Event
-	exception = context.ShouldBindJSON(&event)
+	exception := context.ShouldBindJSON(&event)
 
 	if exception != nil {
 		context.JSON(
@@ -76,6 +56,15 @@ func createEvent(context *gin.Context) {
 			gin.H{"message": "InvalidBodyException"},
 		)
 		fmt.Println(exception)
+		return
+	}
+
+	userId := context.GetInt64("userId")
+	if userId == 0 {
+		context.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			gin.H{"message": "UnauthorizedException"},
+		)
 		return
 	}
 
