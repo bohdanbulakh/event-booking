@@ -138,3 +138,19 @@ func (event *Event) Delete() error {
 	_, exception = statement.Exec(event.Id)
 	return exception
 }
+
+func (event *Event) Register(userId int64) error {
+	query := `
+  INSERT INTO registrations(userId, eventId)
+  VALUES (?, ?)`
+
+	statement, exception := database.DB.Prepare(query)
+	if exception != nil {
+		return exception
+	}
+	defer statement.Close()
+
+	_, exception = statement.Exec(event.Id, userId)
+
+	return exception
+}
