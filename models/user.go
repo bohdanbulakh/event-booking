@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"event-booking/database"
 	"event-booking/utils"
@@ -17,20 +18,17 @@ func (user *User) Save() error {
 	INSERT INTO users (email, password)
 	VALUES (?, ?)`
 
-	statement, exception := database.DB.Prepare(query)
-	if exception != nil {
-		return exception
-	}
-
 	hashedPassword, exception := utils.HashPassword(user.Password)
 	if exception != nil {
 		return exception
 	}
 
-	result, exception := statement.Exec(
+	result, exception := database.Exec(
+		query,
 		user.Email,
 		hashedPassword,
 	)
+
 	if exception != nil {
 		return exception
 	}
@@ -42,13 +40,15 @@ func (user *User) Save() error {
 
 func (user *User) ValidateCredentials() error {
 	query := "SELECT id, password FROM users WHERE email = ?"
-	row := database.DB.QueryRow(query, user.Email)
-
 	var hashedPassword string
-	exception := row.Scan(
-		&user.Id,
-		&hashedPassword,
-	)
+
+	_, exception := database.QueryRow(query, func(row *sql.Row) error {
+		return row.Scan(
+			&user.Id,
+			&hashedPassword,
+		)
+	}, user.Email)
+
 	if exception != nil {
 		return exception
 	}

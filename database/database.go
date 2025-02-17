@@ -2,24 +2,27 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
 
-var DB *sql.DB
+var db *sql.DB
 
 type Table map[string]string
+type RowCallback func(row *sql.Row) error
+type RowsCallback func(rows *sql.Rows) error
 
 func InitDB() {
 	var err error
-	DB, err = sql.Open("sqlite3", "api.db")
+	db, err = sql.Open("sqlite3", "api.db")
 
 	if err != nil {
 		log.Fatal("Could not connect to database.")
 	}
 
-	DB.SetMaxOpenConns(20)
-	DB.SetMaxIdleConns(5)
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(5)
 	createTables()
 }
 
@@ -54,8 +57,51 @@ func createTables() {
 }
 
 func createTable(name, query string) {
-	_, exception := DB.Exec(query)
+	_, exception := db.Exec(query)
 	if exception != nil {
 		log.Fatalf("Cannot create %s table:\n%s", name, exception)
 	}
+}
+
+func Exec(query string, args ...any) (sql.Result, error) {
+	statement, exception := db.Prepare(query)
+	if exception != nil {
+		return nil, exception
+	}
+
+	defer statement.Close()
+	return statement.Exec(args...)
+}
+
+func Query(query string, callback RowsCallback, args ...any) (*sql.Rows, error) {
+	rows, exception := db.Query(query, args...)
+	if exception != nil {
+		return nil, exception
+	}
+
+	defer rows.Close()
+	if callback != nil {
+		exception := callback(rows)
+		if exception != nil {
+			return nil, exception
+		}
+	}
+
+	return rows, exception
+}
+
+func QueryRow(query string, callback RowCallback, args ...any) (*sql.Row, error) {
+	row := db.QueryRow(query, args...)
+	if row == nil {
+		return nil, errors.New("no rows found")
+	}
+
+	if callback != nil {
+		exception := callback(row)
+		if exception != nil {
+			return nil, exception
+		}
+	}
+
+	return row, nil
 }
