@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type scannable interface {
+	Scan(dest ...any) error
+}
+
 type Event struct {
 	Id          int64
 	Name        string    `binding:"required" json:"name"`
@@ -45,6 +49,20 @@ func (event *Event) Save() error {
 	return nil
 }
 
+func getEvent(row scannable) (Event, error) {
+	var event Event
+	exception := row.Scan(
+		&event.Id,
+		&event.Name,
+		&event.Description,
+		&event.Location,
+		&event.DateTime,
+		&event.UserId,
+	)
+
+	return event, exception
+}
+
 func GetAllEvents() ([]Event, error) {
 	query := `
 	SELECT * FROM events`
@@ -58,16 +76,7 @@ func GetAllEvents() ([]Event, error) {
 	var events []Event
 
 	for rows.Next() {
-		var event Event
-		exception = rows.Scan(
-			&event.Id,
-			&event.Name,
-			&event.Description,
-			&event.Location,
-			&event.DateTime,
-			&event.UserId,
-		)
-
+		event, exception := getEvent(rows)
 		if exception != nil {
 			return nil, exception
 		}
@@ -84,15 +93,7 @@ func GetEventById(id int64) (*Event, error) {
 
 	row := database.DB.QueryRow(query, id)
 
-	var event Event
-	exception := row.Scan(
-		&event.Id,
-		&event.Name,
-		&event.Description,
-		&event.Location,
-		&event.DateTime,
-		&event.UserId,
-	)
+	event, exception := getEvent(row)
 
 	if exception != nil {
 		return nil, exception
