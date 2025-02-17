@@ -8,6 +8,8 @@ import (
 
 var DB *sql.DB
 
+type Table map[string]string
+
 func InitDB() {
 	var err error
 	DB, err = sql.Open("sqlite3", "api.db")
@@ -22,13 +24,13 @@ func InitDB() {
 }
 
 func createTables() {
-	tables := []string{
-		`CREATE TABLE IF NOT EXISTS users (
+	tables := Table{
+		"users": `CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email VARCHAR(50) UNIQUE NOT NULL,
       password VARCHAR(50) NOT NULL
   )`,
-		`CREATE TABLE IF NOT EXISTS events (
+		"events": `CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(50) NOT NULL,
     description VARCHAR(255),
@@ -37,7 +39,7 @@ func createTables() {
 		user_id INTEGER NOT NULL,
 		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 	)`,
-		`CREATE TABLE IF NOT EXISTS registrations (
+		"registrations": `CREATE TABLE IF NOT EXISTS registrations (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
 		event_id INTEGER NOT NULL,
@@ -46,14 +48,14 @@ func createTables() {
 	)`,
 	}
 
-	for _, table := range tables {
-		createTable(table)
+	for name, query := range tables {
+		createTable(name, query)
 	}
 }
 
-func createTable(script string) {
-	_, exception := DB.Exec(script)
+func createTable(name, query string) {
+	_, exception := DB.Exec(query)
 	if exception != nil {
-		log.Fatal("Cannot create registrations table")
+		log.Fatalf("Cannot create %s table:\n%s", name, exception)
 	}
 }
