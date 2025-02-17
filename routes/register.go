@@ -14,7 +14,7 @@ func registerForEvent(context *gin.Context) {
 		context.Param("id"), 10, 64)
 
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "Cannot parse event id"},
 		)
@@ -23,7 +23,7 @@ func registerForEvent(context *gin.Context) {
 
 	event, exception := models.GetEventById(eventId)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusNotFound,
 			gin.H{"message": "NotFoundException"},
 		)
@@ -32,11 +32,11 @@ func registerForEvent(context *gin.Context) {
 
 	exception = event.Register(userId)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 
@@ -52,7 +52,7 @@ func cancelRegistration(context *gin.Context) {
 		context.Param("id"), 10, 64)
 
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "Cannot parse event id"},
 		)
@@ -61,7 +61,7 @@ func cancelRegistration(context *gin.Context) {
 
 	event, exception := models.GetEventById(eventId)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusNotFound,
 			gin.H{"message": "NotFoundException"},
 		)
@@ -70,11 +70,11 @@ func cancelRegistration(context *gin.Context) {
 
 	exception = event.CancelRegistration(userId)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 }

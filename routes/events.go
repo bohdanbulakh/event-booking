@@ -11,11 +11,11 @@ import (
 func getEvents(context *gin.Context) {
 	events, exception := models.GetAllEvents()
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 
@@ -25,21 +25,19 @@ func getEvents(context *gin.Context) {
 func getEvent(context *gin.Context) {
 	id, exception := strconv.ParseInt(context.Param("id"), 10, 64)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "Cannot parse event id"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
 	event, exception := models.GetEventById(id)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusNotFound,
 			gin.H{"message": "NotFoundException"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
@@ -51,11 +49,10 @@ func createEvent(context *gin.Context) {
 	exception := context.ShouldBindJSON(&event)
 
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "InvalidBodyException"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
@@ -71,11 +68,11 @@ func createEvent(context *gin.Context) {
 	event.UserId = userId
 	exception = event.Save()
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 
@@ -88,21 +85,19 @@ func createEvent(context *gin.Context) {
 func updateEvent(context *gin.Context) {
 	id, exception := strconv.ParseInt(context.Param("id"), 10, 64)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "Cannot parse event id"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
 	event, exception := models.GetEventById(id)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusNotFound,
 			gin.H{"message": "NotFoundException"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
@@ -119,22 +114,21 @@ func updateEvent(context *gin.Context) {
 	exception = context.ShouldBindJSON(&updatedEvent)
 
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "InvalidBodyException"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
 	updatedEvent.Id = id
 	exception = updatedEvent.Update()
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 
@@ -147,21 +141,19 @@ func updateEvent(context *gin.Context) {
 func deleteEvent(context *gin.Context) {
 	id, exception := strconv.ParseInt(context.Param("id"), 10, 64)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "Cannot parse event id"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
 	event, exception := models.GetEventById(id)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusNotFound,
 			gin.H{"message": "NotFoundException"},
 		)
-		fmt.Println(exception)
 		return
 	}
 
@@ -176,11 +168,11 @@ func deleteEvent(context *gin.Context) {
 
 	exception = event.Delete()
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 

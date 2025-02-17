@@ -13,7 +13,7 @@ func signup(context *gin.Context) {
 	exception := context.ShouldBindJSON(&user)
 
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "InvalidBodyException"},
 		)
@@ -22,11 +22,11 @@ func signup(context *gin.Context) {
 
 	exception = user.Save()
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": "InternalServerError"},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 
@@ -42,7 +42,7 @@ func login(context *gin.Context) {
 
 	exception := context.ShouldBindJSON(&user)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusBadRequest,
 			gin.H{"message": "InvalidBodyException"},
 		)
@@ -51,7 +51,7 @@ func login(context *gin.Context) {
 
 	exception = user.ValidateCredentials()
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusUnauthorized,
 			gin.H{"message": "UnauthorizedException"},
 		)
@@ -63,11 +63,11 @@ func login(context *gin.Context) {
 		user.Email,
 	)
 	if exception != nil {
-		context.JSON(
+		context.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			gin.H{"message": exception.Error()},
 		)
-		fmt.Println(exception)
+		_ = fmt.Errorf("InternalServerError\n%w", exception)
 		return
 	}
 
